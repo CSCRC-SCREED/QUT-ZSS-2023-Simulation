@@ -1,6 +1,6 @@
 ## Testbed essential scripts
 
-The testbed simulates a small-scale smart zone substation, including the primary plant (physical process), the process bus communication (GOOSE and SV protocols), the protective relays (Intelligent electronic devices or IEDs), the station bus communication (MMS protocol), and the human-machine interface (HMI). Figure 3 demonstrates the overall architecture and communication design of the simulation testbed.
+The testbed simulates a small-scale smart zone substation, including the primary plant (physical process), the process bus communication (GOOSE and SV protocols), the protective relays (Intelligent electronic devices or IEDs), the station bus communication (MMS protocol), and the human-machine interface (HMI). Figures 3 and 4 demonstrate the overall architecture and communication design of the simulation testbed.
 
 <img src="PrimaryPlant.jpg" alt="" width="800" height="510" />
 
