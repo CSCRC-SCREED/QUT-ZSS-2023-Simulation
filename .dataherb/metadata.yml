@@ -1,0 +1,38 @@
+name: QUT-ZSS-2023-Simulation
+description: The testbed simulates a small-scale smart zone substation, including the primary plant (physical process), the process bus communication (GOOSE and SV protocols), the protective relays (Intelligent electronic devices or IEDs), the station bus communication (MMS protocol), and the human-machine interface (HMI).
+contributors:
+- name: Xuelei Wang
+
+data:
+- path: https://github.com/CSCRC-SCREED/QUT-ZSS-2023-Simulation
+  format: others, C, C++, Ladder logic, bin
+  type: simulated/synthetic
+  status: other, simulation environment
+  
+
+The testbed consists of six virtual machines (VMs):
+- metadata of the VM-Primary plant :
+    total number of files: [180]
+    size: [Approx 15 MB]
+- metadata of the VM-IED_PIOC_XFMR1 :
+    total number of files: [180]
+    size: [Approx 15 MB]
+- metadata of the VM-IED_PIOC_XFMR2 :
+    total number of files: [180]
+    size: [Approx 15 MB]
+ - metadata of the VM-IED_PIOC_FDR :
+    total number of files: [180]
+    size: [Approx 15 MB]
+- metadata of the VM-HMI :
+    total number of files: [180]
+    size: [Approx 15 MB]
+- metadata of the VM-Network_switch_IDS :
+    total number of files: [180]
+    size: [Approx 15 MB]
+
+license:
+- name: GNU v3
+  link: [Link to the license page]
+references:
+- name: [Anomaly Detection for Insider Attacks From Untrusted Intelligent Electronic Devices in Substation Automation Systems]
+  link: [https://ieeexplore.ieee.org/document/9676687]

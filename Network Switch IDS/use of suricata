@@ -1,0 +1,12 @@
+###########To monitor the fast log for any alarm#########################
+
+sudo tail -f /var/log/suricata/fast.log
+
+
+###########To test the violation case#########################
+sudo curl http://testmyids.com/
+
+###########suricata is running by default in the background#########################
+###########to manually run suricata with particular interface#########################
+
+suricata -i enp0s3
