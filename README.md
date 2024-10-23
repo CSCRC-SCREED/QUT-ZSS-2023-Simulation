@@ -1,20 +1,20 @@
 ## Testbed essential scripts
 
-The testbed simulates a small-scale smart zone substation, including the primary plant (physical process), the process bus communication (GOOSE and SV protocols), the protective relays (Intelligent electronic devices or IEDs), the station bus communication (MMS protocol), and the human-machine interface (HMI). Figures 3 and 4 demonstrate the overall architecture and communication design of the simulation testbed.
-
-<img src="PrimaryPlant.jpg" alt="" width="800" height="510" />
-
-*Figure 2. The primary plant simulation in MATLAB*
+The testbed simulates a small-scale smart zone substation based on the IEC 61850 standard, including the primary plant (physical process), three protective relays (Intelligent electronic devices), two Merging units (MUs), the process bus communication (IEC 61850 GOOSE and SV protocols), the station bus communication (IEC 61850 MMS protocol), and a human-machine interface (HMI). Figures 1 and 2 demonstrate the overall architecture and communication design of the simulation testbed.
 
 <img src="Testbed design (Station-bus).jpg" alt="" width="800" height="553" />
 
-*Figure 3. Architecture and communication design of the simulation testbed (station bus part)*
+*Figure 1. Architecture and communication design of the simulation testbed (station bus part)*
 
 <img src="Testbed design (Process-bus).jpg" alt="" width="800" height="553" />
 
-*Figure 4. Architecture and communication design of the simulation testbed (process bus part)*
+*Figure 2. Architecture and communication design of the simulation testbed (process bus part)*
 
-The testbed simulates both the primary plant and secondary plant of an electricity distribution substation, especially the physical distribution process and the process bus communications based on the IEC 61850 standard. The testbed runs on an Oracle VirtualBox with five virtual machines (VMs). One VM simulates a small-scale primary plant of a distribution substation using [**MATLAB/Simulink**](https://www.mathworks.com/products/simulink). The other three VMs represent three instantaneous-overcurrent-protection relays using [**OpenPLC**](https://www.openplcproject.com). Communication interfaces among each VM, such as GOOSE and SV messages between IEDs and the primary plant, are written in C++ based on an open-source library - [**libiec61850**](http://libiec61850.com). The last VM simulates the process bus network switch.
+The testbed runs on an Oracle VirtualBox with five virtual machines (VMs). One VM simulates a small-scale primary plant of a zone substation using [**MATLAB/Simulink** shown in Figure 3](https://www.mathworks.com/products/simulink). The other three VMs represent three instantaneous-overcurrent-protection relays using [**OpenPLC**](https://www.openplcproject.com). Communication protocols (GOOSE, SV and MMS) among IEDs, MUs and the primary plant, are written in C++ based on an open-source library - [**libiec61850**](http://libiec61850.com). The last VM acts as the layer 2 network switch in the process bus and the layer 3 router in the station bus.
+
+<img src="PrimaryPlant.jpg" alt="" width="800" height="510" />
+
+*Figure 3. The primary plant simulation in MATLAB*
 
 **Each folder/directory contains various essential scripts for one particular Virtual Machine. These include:**
 - Primary plant: the physical process
@@ -22,7 +22,7 @@ The testbed simulates both the primary plant and secondary plant of an electrici
 - IED_PIOC_XFMR2: the overcurrent protection IED/relays for transformer2
 - IED_PIOC_FDR: the overcurrent protection IED/relays for feeders
 - IED_HMI: the human-machine interface for controlling IEDs
-- Network Switch IDS: the network switch for data analysis and intrusion detection purpose
+- Network device: the network device used for both the process bus and stations bus, as well as for data collection and intrusion detection purposes
 
 > Port summary.xlsx: indicates all the UDP port numbers for communication between Simulink and OpenPLC
 
