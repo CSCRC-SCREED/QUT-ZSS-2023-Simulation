@@ -2,7 +2,7 @@
 
 The testbed simulates a small-scale smart zone substation based on the IEC 61850 standard, including the primary plant (physical process), three protective relays (Intelligent electronic devices), two Merging units (MUs), the process bus communication (IEC 61850 GOOSE and SV protocols), the station bus communication (IEC 61850 MMS protocol), and a human-machine interface (HMI). Figures 1 demonstrates the overall architecture and communication design of the simulation testbed.
 
-<img src="Testbed design.jpg" alt="" width="800" height="553" />
+<img src="Testbed design.jpg" alt="" width="800" height="450" />
 
 *Figure 1. Architecture and communication design of the simulation testbed*
 
