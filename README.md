@@ -13,25 +13,25 @@ The testbed runs on an Oracle VirtualBox with five virtual machines (VMs). One V
 *Figure 2. The primary plant simulation in MATLAB*
 
 **Each folder/directory contains various essential scripts for one particular Virtual Machine. These include:**
-1. Primary plant: the physical process, 
+1. **Primary plant**: the physical process, 
 - interface:enp0s8, connecting to process bus with MAC 20:17:01:16:F2:54
   
-2. IED_PIOC_XFMR1: the overcurrent protection IED/relays for transformer1
+2. **IED_PIOC_XFMR1**: the overcurrent protection IED/relays for transformer1
 - interface:enp0s8, connecting to process bus with MAC 20:17:01:16:F0:23
 - interface:enp0s9, connecting to station bus with IP 32.32.32.23/24
 
-3. IED_PIOC_XFMR2: the overcurrent protection IED/relays for transformer2
+3. **IED_PIOC_XFMR2**: the overcurrent protection IED/relays for transformer2
 - interface:enp0s8, connecting to process bus with MAC 20:17:01:16:F0:32
 - interface:enp0s9, connecting to station bus with IP 32.32.32.32/24
 
-4. IED_PIOC_FDR: the overcurrent protection IED/relays for feeders
+4. **IED_PIOC_FDR**: the overcurrent protection IED/relays for feeders
 - interface:enp0s8, connecting to process bus with MAC 20:17:01:16:F0:11
 - interface:enp0s9, connecting to station bus with IP 32.32.32.11/24
 
-5. HMI-SCADA: the human-machine interface for controlling IEDs
+5. **HMI-SCADA**: the human-machine interface for controlling IEDs
 - interface:enp0s8, connecting to station bus with IP 32.32.32.99/24
 
-6. Net_Device: the network device used for both the process bus and stations bus, as well as for data collection and intrusion detection purposes
+6. **Net_Device**: the network device used for both the process bus and stations bus, as well as for data collection and intrusion detection purposes
 - interface:enp0s8, connecting to process bus with MAC 20:17:01:16:F0:01
 - interface:enp0s9, connecting to station bus with IP 32.32.32.1/24
 
