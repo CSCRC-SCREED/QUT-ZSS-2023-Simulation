@@ -13,11 +13,15 @@ The testbed runs on an Oracle VirtualBox with five virtual machines (VMs). One V
 *Figure 2. The primary plant simulation in MATLAB*
 
 **Each folder/directory contains various essential scripts for one particular Virtual Machine. These include:**
-- Primary plant: the physical process
+- 1) Primary plant: the physical process, 
+-- interface:enp0s8, connecting to process bus with MAC 20:17:01:16:F2:54
+  
 - IED_PIOC_XFMR1: the overcurrent protection IED/relays for transformer1
+  interface:enp0s8, connecting to process bus with MAC 20:17:01:16:F2:54
+
 - IED_PIOC_XFMR2: the overcurrent protection IED/relays for transformer2
 - IED_PIOC_FDR: the overcurrent protection IED/relays for feeders
-- IED_HMI: the human-machine interface for controlling IEDs
+- HMI-SCADA: the human-machine interface for controlling IEDs
 - Net_Device: the network device used for both the process bus and stations bus, as well as for data collection and intrusion detection purposes
 
 > Port summary.xlsx: indicates all the UDP port numbers for communication between Simulink and OpenPLC
