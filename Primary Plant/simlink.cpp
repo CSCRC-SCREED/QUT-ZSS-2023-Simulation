@@ -729,6 +729,7 @@ int main()
 	    //Close file//
 	    	fclose(fp);
 	    
+	    /*
 	    //Open File TripFromBFP.csv//
 	    	fp=fopen("TripRecord/TripFromBFP.csv","r");
 	    	if(fp==NULL) {
@@ -743,6 +744,7 @@ int main()
 		}	     
 	    //Close file//
 	    	fclose(fp);
+	    	*/
 	    	
 	    //Open File CurrentValues.csv//
 	    	fp=fopen("TripRecord/CurrentValues.csv","w");
@@ -776,10 +778,10 @@ int main()
 	    */	
 	    // Combine Overlapped control logic	    		    	    	    	    	    	    	    
 		for (int i = 0; i <12; i++ )
-		    stations_data[0].digitalOut[i] = XFMR1CBstval[i] || XFMR2CBstval[i] || FDRCBstval[i] || BFPCBstval[i];
+		    stations_data[0].digitalOut[i] = XFMR1CBstval[i] || XFMR2CBstval[i] || FDRCBstval[i] ;
 		
 		stations_data[0].digitalOut[1] = XFMR1CBstval[1] && XFMR2CBstval[1];  
-		stations_data[0].digitalOut[6] = XFMR1CBstval[6] && XFMR2CBstval[6] && FDRCBstval[6] && BFPCBstval[6];		
+		stations_data[0].digitalOut[6] = XFMR1CBstval[6] && XFMR2CBstval[6] && FDRCBstval[6] ;		
 		
 		//Debug status of CB2_22kv//
 		//printf(" %d, %d, %d\n", XFMR1CBstval[6], XFMR2CBstval[6], BFPCBstval[6]);

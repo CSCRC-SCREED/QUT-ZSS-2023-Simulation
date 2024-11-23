@@ -12,23 +12,23 @@ data:
 
 The testbed consists of six virtual machines (VMs):
 - metadata of the VM-Primary plant :
-    total number of files: [180]
-    size: [Approx 15 MB]
+    total number of files: [251]
+    size: [Approx 20 MB]
 - metadata of the VM-IED_PIOC_XFMR1 :
-    total number of files: [180]
-    size: [Approx 15 MB]
+    total number of files: [100]
+    size: [Approx 6.6 MB]
 - metadata of the VM-IED_PIOC_XFMR2 :
-    total number of files: [180]
-    size: [Approx 15 MB]
+    total number of files: [100]
+    size: [Approx 6.6 MB]
  - metadata of the VM-IED_PIOC_FDR :
-    total number of files: [180]
-    size: [Approx 15 MB]
-- metadata of the VM-HMI :
-    total number of files: [180]
-    size: [Approx 15 MB]
-- metadata of the VM-Network_switch_IDS :
-    total number of files: [180]
-    size: [Approx 15 MB]
+    total number of files: [208]
+    size: [Approx 18 MB]
+- metadata of the VM-HMI-SCADA :
+    total number of files: [14]
+    size: [Approx 3.6 MB]
+- metadata of the VM-Net_Device :
+    total number of files: [4]
+    size: [Approx 15 KB]
 
 license:
 - name: GNU v3

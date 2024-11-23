@@ -5,9 +5,9 @@
 
 Malicious behaviour:
 
-Network level: Record a fault, then after 2000 packets, MU1 modifies and replayed malicious SV packets (all) to fake emergency situation on 66kV (2 scenarios) following the KCL/KVL laws.
+Network level: When a true emergency (short-circuit) occurs on the 66kV bus line, the malicious program will start by recording all variations in measurements until the fault is isolated (the associated measurements drop to 0). In a future moment (e.g., 100 seconds after the true emergency occurs), except for the benign publisher program, the malicious program will start again and inject SV packets (**50ms** heartbeat) with **all** recorded measurements to replay an emergency (short-circuit) situation on the 66kV bus line.
 
-Physical process level: Under normal operation, the fake emergency signals will deceive IEDs to trips CBs, and thus, disrupt power transmission.
+Physical process level: Under fault-free operation, circuit breakers protecting the 66kV bus line are ALWAYS decived into tripping (attacks ALWAYS impact the physical process), while the power supply is ALWAYS interrupted.
 
 #####################################################################################################################################################
 */
@@ -208,20 +208,13 @@ main(int argc, char** argv)
         SVPublisher_setupComplete(svPublisher);
 
 //########################################################Malicious codes begin#############################################################################################//	 	 
-	int j = 0;
-	int trigger_num = 2000; // trigger at # of packets
-	int RecordTime_F_66kV1 = 0;
-	int RecordTime_F_66kV2 = 0;
-	int Num_records_F_66kV1 = 0;
-	int Num_records_F_66kV2 = 0;
-	int RESET = 0;
-	
-	FILE *fp;
-	fp=fopen("/home/ray/Desktop/Primary Plant/TripRecord/F_66kV1.csv","w");
-	fclose(fp);
-	
-	fp=fopen("/home/ray/Desktop/Primary Plant/TripRecord/F_66kV2.csv","w");
-	fclose(fp);
+		int j = 0;
+		int trigger1 = 2400; // the first trigger at the 2400th SV packet (the 120th second regarding 50ms HB)
+		int trigger2 = 3600; // the second trigger at the 3600th SV packet (the 180th second regarding 50ms HB)
+		int record_measure[100][13] = {}; // 
+		int num_of_records = 0; // the number of the recorded measurements
+		int num_of_inject = 0; // the number of packets to inject
+		bool recorded = false;	// flag to indicate if recording has been occurred
 
 //########################################################Malicious codes end#############################################################################################//
 
@@ -229,249 +222,193 @@ main(int argc, char** argv)
             Timestamp ts;
             Timestamp_clearFlags(&ts);
             Timestamp_setTimeInMilliseconds(&ts, Hal_getTimeInMs());
+            FILE *fp;
             
-	    int i;
+	    	int i;
             //Open File//
             fp=fopen("/home/ray/Desktop/Primary Plant/TripRecord/CurrentValues.csv","r");
             if(fp==NULL) {
-	    	printf("File cannot open! " );
-	    	exit(0);
-	    }
-	    //Read values from file//
-	    for (i=0; i<26; i++) {
-	    	fscanf(fp,"%d,", &Current_values[i]);
-	    	//Debug//
-	    	//printf("%d\t",Current_values[i]);
-	    }    
-	    //Close file//
-	    fclose(fp);
+	    		printf("File cannot open! " );
+	    		exit(0);
+			}
+			//Read values from file//
+			for (i=0; i<26; i++) {
+				fscanf(fp,"%d,", &Current_values[i]);
+				//Debug//
+				//printf("%d\t",Current_values[i]);
+			}    
+			//Close file//
+			fclose(fp);
 	    
-	    //Allocate physical values//
-	    int I_66kV1 =    Current_values[0];
-	    int I_66kV2 =    Current_values[1];
-	    int I_66kV3 =    Current_values[2];
-	    int I_XFMR1W1 =  Current_values[3];
-	    int I_XFMR2W1 =  Current_values[4];
-	    int I_XFMR1W2 =  Current_values[5];
-	    int I_XFMR2W2 =  Current_values[6];
-	    int I_CB_XFMR1 = Current_values[7];
-	    int I_CB_XFMR2 = Current_values[8];
-	    int I_F_66kV1 =  Current_values[16];
-	    int I_F_66kV2 =  Current_values[17];
-	    int I_F_XFMR1 =  Current_values[18];
-	    int I_F_XFMR2 =  Current_values[19];
+			//Allocate physical values//
+			int I_66kV1 =    Current_values[0];
+			int I_66kV2 =    Current_values[1];
+			int I_66kV3 =    Current_values[2];
+			int I_XFMR1W1 =  Current_values[3];
+			int I_XFMR2W1 =  Current_values[4];
+			int I_XFMR1W2 =  Current_values[5];
+			int I_XFMR2W2 =  Current_values[6];
+			int I_CB_XFMR1 = Current_values[7];
+			int I_CB_XFMR2 = Current_values[8];
+			int I_F_66kV1 =  Current_values[16];
+			int I_F_66kV2 =  Current_values[17];
+			int I_F_XFMR1 =  Current_values[18];
+			int I_F_XFMR2 =  Current_values[19];
 	    
 //########################################################Malicious codes begin#############################################################################################//
-	    j++;
-	    
-	    //Open file//
-	    fp=fopen("/home/ray/Desktop/Primary Plant/TripRecord/reset.csv","r");
-            if(fp==NULL) {
-	    	printf("File cannot open! " );
-	    	exit(0);
-	  	}
-	    //Read values from file//
-	    fscanf(fp,"%d,", &RESET);
-	    //Close file//
-	    fclose(fp);
+	    	j++;
+			
+			// Record any faults occurs on 66kV bus for the first time //	    
+			if ( ( (I_F_66kV1 > 1) && (recorded == false) ) || ( (I_F_66kV2 > 1) && (recorded == false) ) ) {
+				// Record normal measurements
+				for (int m=0; m<9; m++) 
+					record_measure[num_of_records][m] = Current_values[m];
+				// Record faulty measurements	
+		   	 	for (int n=16; n<20; n++)
+					record_measure[num_of_records][n-7] = Current_values[n];
+				// debug
+				/*
+				for (i = 0; i < 13; i++)
+					printf("%d,", record_measure[num_of_records][i]);
+				printf("\n");
+				*/
+				// The number of records increase by 1
+				num_of_records = num_of_records + 1;
+			}
+			
+			// if all faulty_measurements is almost 0 and the number of records is <= 0
+			if ( (I_F_66kV1 + I_F_66kV2 <= 1) && (num_of_records > 0) && (recorded == false) ) {
+				// set the flag that faulty measurements have been recorded
+				recorded = true;
+				// Inject all records
+				num_of_inject = num_of_records;
+				// debug
+				printf("the number of records is %d\n", num_of_records);
+				for (int p = 0; p < num_of_records; p++) 
+				{
+					for (int q = 0; q < 13; q++) {
+						printf("%d,", record_measure[p][q]);
+					}
+					printf("\n");
+				}
+			}	
+				
+			if ( (j > trigger1 ) && (j <= trigger1 + num_of_inject) ) {
+			
+				I_66kV1 =    record_measure[j-trigger1-1][0];
+				I_66kV2 =    record_measure[j-trigger1-1][1];
+				I_66kV3 =    record_measure[j-trigger1-1][2];
+				I_XFMR1W1 =  record_measure[j-trigger1-1][3];
+				I_XFMR2W1 =  record_measure[j-trigger1-1][4];
+				I_XFMR1W2 =  record_measure[j-trigger1-1][5];
+				I_XFMR2W2 =  record_measure[j-trigger1-1][6];
+				I_CB_XFMR1 = record_measure[j-trigger1-1][7];
+				I_CB_XFMR2 = record_measure[j-trigger1-1][8];
+				I_F_66kV1 =  record_measure[j-trigger1-1][9];
+				I_F_66kV2 =  record_measure[j-trigger1-1][10];
+				I_F_XFMR1 =  record_measure[j-trigger1-1][11];
+				I_F_XFMR2 =  record_measure[j-trigger1-1][12];
+				//debug
+				if (j == trigger1 + num_of_inject)
+					printf("Injected %d packets successfully from SmpCnt %d to SmpCnt %d \n", num_of_inject, j-num_of_inject+1, j);
+	    	}
+	    	
+	    	if ( (j > trigger2 ) && (j <= trigger2 + num_of_inject) ) {
+	    	
+	    		I_66kV1 =    record_measure[j-trigger2-1][0];
+				I_66kV2 =    record_measure[j-trigger2-1][1];
+				I_66kV3 =    record_measure[j-trigger2-1][2];
+				I_XFMR1W1 =  record_measure[j-trigger2-1][3];
+				I_XFMR2W1 =  record_measure[j-trigger2-1][4];
+				I_XFMR1W2 =  record_measure[j-trigger2-1][5];
+				I_XFMR2W2 =  record_measure[j-trigger2-1][6];
+				I_CB_XFMR1 = record_measure[j-trigger2-1][7];
+				I_CB_XFMR2 = record_measure[j-trigger2-1][8];
+				I_F_66kV1 =  record_measure[j-trigger2-1][9];
+				I_F_66kV2 =  record_measure[j-trigger2-1][10];
+				I_F_XFMR1 =  record_measure[j-trigger2-1][11];
+				I_F_XFMR2 =  record_measure[j-trigger2-1][12];
+				//debug
+				if (j == trigger2 + num_of_inject)
+					printf("Injected %d packets successfully from SmpCnt %d to SmpCnt %d \n", num_of_inject, j-num_of_inject+1, j);
+	    	}
+	    	
+			if ( ( (j > trigger1 ) && (j <= trigger1 + num_of_inject) ) || ( (j > trigger2 ) && (j <= trigger2 + num_of_inject) ) ) {
+//########################################################Malicious codes end#############################################################################################//    
+	    		//Assign values to different ASDUs//
+            	SVPublisher_ASDU_setINT32(asdu1, int1_asdu1, I_66kV1);
+            	SVPublisher_ASDU_setTimestamp(asdu1, ts_asdu1, ts);
+            	SVPublisher_ASDU_increaseSmpCnt(asdu1);
+            	SVPublisher_ASDU_setSmpSynch(asdu1, smpSynch);           
 
-
-//###########################Record fault 66kv1, and mimics the fault#####################################################################################################//	    
-	    if ( (I_F_66kV1 > 1) && (RESET == 0) ) {
-	    	//Open File//
-            	fp=fopen("/home/ray/Desktop/Primary Plant/TripRecord/F_66kV1.csv","a");
-            	if(fp==NULL) {
-	    		printf("File cannot open! " );
-	    		exit(0);
-	   	 }
-	    	//write values to file//
-	    	for (i=0; i<9; i++) {
-	    		fprintf(fp,"%d,", Current_values[i]);
-	    		//Debug//
-	    		//printf("%d\t",Current_values[i]);
-	   	 }
-	   	 for (i=16; i<20; i++) {
-	    		fprintf(fp,"%d,", Current_values[i]);
-	    		//Debug//
-	    		//printf("%d\t",Current_values[i]);
-	   	 }
-	   	 fprintf(fp,"\n");
-	   	 Num_records_F_66kV1++;    
-	   	 //Close file//
-	   	 fclose(fp);
-	   	 RecordTime_F_66kV1 = j;
-	   	 //Debug//
-	   	 printf("%d,%d\n", Num_records_F_66kV1, RecordTime_F_66kV1);
-	    }
-	    
-	    if ( (j > RecordTime_F_66kV1 + trigger_num - Num_records_F_66kV1) && (j <= RecordTime_F_66kV1 + trigger_num) ) {
-	    	//Open File//
-            	fp=fopen("/home/ray/Desktop/Primary Plant/TripRecord/F_66kV1.csv","r");
-            	if(fp==NULL) {
-	    		printf("File cannot open! " );
-	    		exit(0);
-	  	}
-	  	
-	  	//Skip # of line to read the #+1 line only//
-	  	for (i = 1; i < j - RecordTime_F_66kV1 - trigger_num + Num_records_F_66kV1; i++)
-	  		fscanf(fp, "%*[^\n]\n");
-	   	
-	   	//Read values from file//
-	   	fscanf(fp,"%d,", &I_66kV1);
-	   	fscanf(fp,"%d,", &I_66kV2);
-	   	fscanf(fp,"%d,", &I_66kV3);
-	   	fscanf(fp,"%d,", &I_XFMR1W1);
-	   	fscanf(fp,"%d,", &I_XFMR2W1);
-	   	fscanf(fp,"%d,", &I_XFMR1W2);
-	   	fscanf(fp,"%d,", &I_XFMR2W2);
-	   	fscanf(fp,"%d,", &I_CB_XFMR1);
-	   	fscanf(fp,"%d,", &I_CB_XFMR2);
-	   	fscanf(fp,"%d,", &I_F_66kV1);
-	   	fscanf(fp,"%d,", &I_F_66kV2);
-	   	fscanf(fp,"%d,", &I_F_XFMR1);
-	   	fscanf(fp,"%d,", &I_F_XFMR2);
-	   	//Debug//
-	    	printf("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",j, I_66kV1, I_66kV2, I_66kV3, I_XFMR1W1, I_XFMR2W1, I_XFMR1W2, I_XFMR2W2, I_CB_XFMR1, I_CB_XFMR2, I_F_66kV1, I_F_66kV2, I_F_XFMR1, I_F_XFMR2);
-
-	   	//Close file//
-	   	fclose(fp);
-	    }
-
-//###########################Record fault 66kv2, and mimics the fault#####################################################################################################//	    	    
-	    if ( (I_F_66kV2 > 1) && (RESET == 0) ) {
-	    	//Open File//
-            	fp=fopen("/home/ray/Desktop/Primary Plant/TripRecord/F_66kV2.csv","a");
-            	if(fp==NULL) {
-	    		printf("File cannot open! " );
-	    		exit(0);
-	   	 }
-	    	//Read values from file//
-	    	for (i=0; i<9; i++) {
-	    		fprintf(fp,"%d,", Current_values[i]);
-	    		//Debug//
-	    		//printf("%d\t",Current_values[i]);
-	   	 }
-	   	 for (i=16; i<20; i++) {
-	    		fprintf(fp,"%d,", Current_values[i]);
-	    		//Debug//
-	    		//printf("%d\t",Current_values[i]);
-	   	 }
-	   	 fprintf(fp,"\n");
-	   	 Num_records_F_66kV2++;   
-	   	 //Close file//
-	   	 fclose(fp);
-	   	 RecordTime_F_66kV2 = j;
-	   	 //Debug//
-	   	 printf("%d,%d\n", Num_records_F_66kV2, RecordTime_F_66kV2);
-	    }
-	    
-	    if ( (j > RecordTime_F_66kV2 + trigger_num - Num_records_F_66kV2) && (j <= RecordTime_F_66kV2 + trigger_num) ) {
-	    	//Open File//
-            	fp=fopen("/home/ray/Desktop/Primary Plant/TripRecord/F_66kV2.csv","r");
-            	if(fp==NULL) {
-	    		printf("File cannot open! " );
-	    		exit(0);
-	  	}
-	  	
-	  	//Skip # of line to read the #+1 line only//
-	  	for (i = 1; i < j - RecordTime_F_66kV2 - trigger_num + Num_records_F_66kV2; i++)
-	  		fscanf(fp, "%*[^\n]\n");
-	   	
-	   	//Read values from file//
-	   	fscanf(fp,"%d,", &I_66kV1);
-	   	fscanf(fp,"%d,", &I_66kV2);
-	   	fscanf(fp,"%d,", &I_66kV3);
-	   	fscanf(fp,"%d,", &I_XFMR1W1);
-	   	fscanf(fp,"%d,", &I_XFMR2W1);
-	   	fscanf(fp,"%d,", &I_XFMR1W2);
-	   	fscanf(fp,"%d,", &I_XFMR2W2);
-	   	fscanf(fp,"%d,", &I_CB_XFMR1);
-	   	fscanf(fp,"%d,", &I_CB_XFMR2);
-	   	fscanf(fp,"%d,", &I_F_66kV1);
-	   	fscanf(fp,"%d,", &I_F_66kV2);
-	   	fscanf(fp,"%d,", &I_F_XFMR1);
-	   	fscanf(fp,"%d,", &I_F_XFMR2);
-	   	//Debug//
-	    	printf("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",j, I_66kV1, I_66kV2, I_66kV3, I_XFMR1W1, I_XFMR2W1, I_XFMR1W2, I_XFMR2W2, I_CB_XFMR1, I_CB_XFMR2, I_F_66kV1, I_F_66kV2, I_F_XFMR1, I_F_XFMR2);
-
-	   	//Close file//
-	   	fclose(fp);
-	    }
-//########################################################Malicious codes end#############################################################################################//
-	    
-	    //Assign values to different ASDUs//
-            SVPublisher_ASDU_setINT32(asdu1, int1_asdu1, I_66kV1);
-            SVPublisher_ASDU_setTimestamp(asdu1, ts_asdu1, ts);
-            SVPublisher_ASDU_increaseSmpCnt(asdu1);
-            SVPublisher_ASDU_setSmpSynch(asdu1, smpSynch);           
-
-            SVPublisher_ASDU_setINT32(asdu2, int1_asdu2, I_66kV2);
-            SVPublisher_ASDU_setTimestamp(asdu2, ts_asdu2, ts);
-            SVPublisher_ASDU_increaseSmpCnt(asdu2);
-            SVPublisher_ASDU_setSmpSynch(asdu2, smpSynch);
+            	SVPublisher_ASDU_setINT32(asdu2, int1_asdu2, I_66kV2);
+            	SVPublisher_ASDU_setTimestamp(asdu2, ts_asdu2, ts);
+            	SVPublisher_ASDU_increaseSmpCnt(asdu2);
+            	SVPublisher_ASDU_setSmpSynch(asdu2, smpSynch);
             
-            SVPublisher_ASDU_setINT32(asdu3, int1_asdu3, I_66kV3);
-            SVPublisher_ASDU_setTimestamp(asdu3, ts_asdu3, ts);
-            SVPublisher_ASDU_increaseSmpCnt(asdu3);
-            SVPublisher_ASDU_setSmpSynch(asdu3, smpSynch);
+            	SVPublisher_ASDU_setINT32(asdu3, int1_asdu3, I_66kV3);
+            	SVPublisher_ASDU_setTimestamp(asdu3, ts_asdu3, ts);
+            	SVPublisher_ASDU_increaseSmpCnt(asdu3);
+            	SVPublisher_ASDU_setSmpSynch(asdu3, smpSynch);
         
-            SVPublisher_ASDU_setINT32(asdu4, int1_asdu4, I_XFMR1W1);
-            SVPublisher_ASDU_setTimestamp(asdu4, ts_asdu4, ts);
-            SVPublisher_ASDU_increaseSmpCnt(asdu4);
-            SVPublisher_ASDU_setSmpSynch(asdu4, smpSynch);
+            	SVPublisher_ASDU_setINT32(asdu4, int1_asdu4, I_XFMR1W1);
+            	SVPublisher_ASDU_setTimestamp(asdu4, ts_asdu4, ts);
+            	SVPublisher_ASDU_increaseSmpCnt(asdu4);
+            	SVPublisher_ASDU_setSmpSynch(asdu4, smpSynch);
             
-            SVPublisher_ASDU_setINT32(asdu5, int1_asdu5, I_XFMR2W1);
-            SVPublisher_ASDU_setTimestamp(asdu5, ts_asdu5, ts);
-            SVPublisher_ASDU_increaseSmpCnt(asdu5);
-            SVPublisher_ASDU_setSmpSynch(asdu5, smpSynch);
+            	SVPublisher_ASDU_setINT32(asdu5, int1_asdu5, I_XFMR2W1);
+            	SVPublisher_ASDU_setTimestamp(asdu5, ts_asdu5, ts);
+            	SVPublisher_ASDU_increaseSmpCnt(asdu5);
+            	SVPublisher_ASDU_setSmpSynch(asdu5, smpSynch);
             
-            SVPublisher_ASDU_setINT32(asdu6, int1_asdu6, I_XFMR1W2);
-            SVPublisher_ASDU_setTimestamp(asdu6, ts_asdu6, ts);
-            SVPublisher_ASDU_increaseSmpCnt(asdu6);
-            SVPublisher_ASDU_setSmpSynch(asdu6, smpSynch);
+            	SVPublisher_ASDU_setINT32(asdu6, int1_asdu6, I_XFMR1W2);
+            	SVPublisher_ASDU_setTimestamp(asdu6, ts_asdu6, ts);
+            	SVPublisher_ASDU_increaseSmpCnt(asdu6);
+            	SVPublisher_ASDU_setSmpSynch(asdu6, smpSynch);
             
-            SVPublisher_ASDU_setINT32(asdu7, int1_asdu7, I_XFMR2W2);
-            SVPublisher_ASDU_setTimestamp(asdu7, ts_asdu7, ts);
-            SVPublisher_ASDU_increaseSmpCnt(asdu7);
-            SVPublisher_ASDU_setSmpSynch(asdu7, smpSynch);
+            	SVPublisher_ASDU_setINT32(asdu7, int1_asdu7, I_XFMR2W2);
+            	SVPublisher_ASDU_setTimestamp(asdu7, ts_asdu7, ts);
+            	SVPublisher_ASDU_increaseSmpCnt(asdu7);
+            	SVPublisher_ASDU_setSmpSynch(asdu7, smpSynch);
             
-            SVPublisher_ASDU_setINT32(asdu8, int1_asdu8, I_CB_XFMR1);
-            SVPublisher_ASDU_setTimestamp(asdu8, ts_asdu8, ts);
-            SVPublisher_ASDU_increaseSmpCnt(asdu8);
-            SVPublisher_ASDU_setSmpSynch(asdu8, smpSynch);
+            	SVPublisher_ASDU_setINT32(asdu8, int1_asdu8, I_CB_XFMR1);
+            	SVPublisher_ASDU_setTimestamp(asdu8, ts_asdu8, ts);
+            	SVPublisher_ASDU_increaseSmpCnt(asdu8);
+            	SVPublisher_ASDU_setSmpSynch(asdu8, smpSynch);
             
-            SVPublisher_ASDU_setINT32(asdu9, int1_asdu9, I_CB_XFMR2);
-            SVPublisher_ASDU_setTimestamp(asdu9, ts_asdu9, ts);
-            SVPublisher_ASDU_increaseSmpCnt(asdu9);
-            SVPublisher_ASDU_setSmpSynch(asdu9, smpSynch);
+            	SVPublisher_ASDU_setINT32(asdu9, int1_asdu9, I_CB_XFMR2);
+            	SVPublisher_ASDU_setTimestamp(asdu9, ts_asdu9, ts);
+            	SVPublisher_ASDU_increaseSmpCnt(asdu9);
+            	SVPublisher_ASDU_setSmpSynch(asdu9, smpSynch);
             
-            SVPublisher_ASDU_setINT32(asdu_f1, int1_asdu_f1, I_F_66kV1);
-            SVPublisher_ASDU_setTimestamp(asdu_f1, ts_asdu_f1, ts);
-            SVPublisher_ASDU_increaseSmpCnt(asdu_f1);
-            SVPublisher_ASDU_setSmpSynch(asdu_f1, smpSynch);
+            	SVPublisher_ASDU_setINT32(asdu_f1, int1_asdu_f1, I_F_66kV1);
+            	SVPublisher_ASDU_setTimestamp(asdu_f1, ts_asdu_f1, ts);
+            	SVPublisher_ASDU_increaseSmpCnt(asdu_f1);
+            	SVPublisher_ASDU_setSmpSynch(asdu_f1, smpSynch);
             
-            SVPublisher_ASDU_setINT32(asdu_f2, int1_asdu_f2, I_F_66kV2);
-            SVPublisher_ASDU_setTimestamp(asdu_f2, ts_asdu_f2, ts);
-            SVPublisher_ASDU_increaseSmpCnt(asdu_f2);
-            SVPublisher_ASDU_setSmpSynch(asdu_f2, smpSynch);
+            	SVPublisher_ASDU_setINT32(asdu_f2, int1_asdu_f2, I_F_66kV2);
+            	SVPublisher_ASDU_setTimestamp(asdu_f2, ts_asdu_f2, ts);
+            	SVPublisher_ASDU_increaseSmpCnt(asdu_f2);
+            	SVPublisher_ASDU_setSmpSynch(asdu_f2, smpSynch);
+            	
+            	SVPublisher_ASDU_setINT32(asdu_f3, int1_asdu_f3, I_F_XFMR1);
+            	SVPublisher_ASDU_setTimestamp(asdu_f3, ts_asdu_f3, ts);
+            	SVPublisher_ASDU_increaseSmpCnt(asdu_f3);
+            	SVPublisher_ASDU_setSmpSynch(asdu_f3, smpSynch);
             
-            SVPublisher_ASDU_setINT32(asdu_f3, int1_asdu_f3, I_F_XFMR1);
-            SVPublisher_ASDU_setTimestamp(asdu_f3, ts_asdu_f3, ts);
-            SVPublisher_ASDU_increaseSmpCnt(asdu_f3);
-            SVPublisher_ASDU_setSmpSynch(asdu_f3, smpSynch);
+            	SVPublisher_ASDU_setINT32(asdu_f4, int1_asdu_f4, I_F_XFMR2);
+            	SVPublisher_ASDU_setTimestamp(asdu_f4, ts_asdu_f4, ts);
+            	SVPublisher_ASDU_increaseSmpCnt(asdu_f4);
+            	SVPublisher_ASDU_setSmpSynch(asdu_f4, smpSynch);
             
-            SVPublisher_ASDU_setINT32(asdu_f4, int1_asdu_f4, I_F_XFMR2);
-            SVPublisher_ASDU_setTimestamp(asdu_f4, ts_asdu_f4, ts);
-            SVPublisher_ASDU_increaseSmpCnt(asdu_f4);
-            SVPublisher_ASDU_setSmpSynch(asdu_f4, smpSynch);
+            	SVPublisher_publish(svPublisher);
+            }
             
-            SVPublisher_publish(svPublisher);
-
             Thread_sleep(50);
         }
 
         SVPublisher_destroy(svPublisher);
-}
+	}
 
     else {
         printf("Failed to create SV publisher\n");
